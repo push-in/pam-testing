@@ -20,3 +20,46 @@ Pam's Rust integration suite for transport, timeout and protocol behavior.
 
 Free and open-source under the [Apache License 2.0](LICENSE). You may use,
 modify, and distribute this package for any purpose, including commercially.
+
+
+## Recommended PAM workflow
+
+Add the testing client to an existing project with `pam composer require --dev pushinbr/pam-testing`. Run the test suite through PAM with `pam composer test` or the script defined by your project.
+
+Run `pam doctor` after dependency changes and before creating a release. The project remains a normal Composer project with a standard manifest, lockfile, PSR-4 autoloading, and `vendor/autoload.php`.
+
+## API guide
+
+| Surface | Use it for |
+| --- | --- |
+| `TestClient` | Issue in-memory `request()`, `get()`, and `postJson()` calls. |
+| `TestResponse::assertStatus()` | Assert an exact status code. |
+| `assertSuccessful()` | Assert a 2xx response. |
+| `assertHeader()` | Assert header presence or value. |
+| `assertJson()` | Assert decoded JSON contains expected values. |
+| `assertJsonPath()` | Assert a dot-path inside decoded JSON. |
+
+The client executes the application pipeline without opening a socket, making route and middleware tests fast and deterministic. It does not replace PAM's Rust integration suite for TLS, HTTP framing, timeout, streaming, cancellation, or backpressure behavior.
+
+## Production checklist
+
+- Keep request data and mutable state scoped to the current request.
+- Test success, validation failure, exception, cancellation, and timeout paths.
+- Configure explicit limits and avoid unbounded payloads, queues, or retained collections.
+- Run `pam doctor`, `pam test`, and the relevant integration suite before release.
+- Validate real dependencies and workload behavior; compatibility is not inferred from package installation alone.
+
+## Troubleshooting
+
+- **Class not found:** run `pam composer install`, verify PSR-4 configuration, and rerun `pam doctor`.
+- **Behavior differs over the network:** reproduce with PAM's transport integration tests; in-memory execution does not model the socket boundary.
+- **A dependency blocks a worker:** use PAM-native I/O, a compatible event loop, a process pool, or additional isolated workers.
+
+## Documentation and support
+
+- [PAM introduction](https://push-in.github.io/pam-docs/introduction/)
+- [Package ecosystem](https://push-in.github.io/pam-docs/packages/ecosystem/)
+- [Runtime compatibility](https://push-in.github.io/pam-docs/runtime/compatibility/)
+- [Report an issue](https://github.com/push-in/pam-testing/issues)
+
+Report security vulnerabilities through GitHub private vulnerability reporting or the PAM security policy, not a public issue.
